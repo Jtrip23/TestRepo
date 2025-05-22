@@ -1,0 +1,25 @@
+# Go to your code.
+cd ~/dev/my-app
+
+# Create a folder to hold the reports/logs.
+mkdir artifacts
+
+# Mount your code at /app and tell the scan to run and publish. If you omit
+# the -Publish parameter, the scan will run without publishing. If you
+# specify -Verbose, you can get detailed console output.
+docker run -i --rm -v ${PWD}:/app `
+    fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z `
+    Start-FortifyScan.ps1 `
+        -BuildId "your-build-id" `
+        -Source /app `
+        -Application "APMXXXXX" `
+        -Version "1.0" `
+        -Token "your-token-goes-here" `
+        -Email "your.email@fiserv.com" `
+        -OutputFolder /app/artifacts `
+        -Publish
+
+# Or, as noted, you can run the Fortify commands yourself.
+docker run -i --rm -v ${PWD}:/app `
+    fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z `
+    sourceanalyzer -b APMXXXXX /app
