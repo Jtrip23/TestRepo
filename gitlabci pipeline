@@ -1,0 +1,45 @@
+stages:
+  - build
+  - fortify_scan
+
+variables:
+  DOTNET_IMAGE: "fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z"
+  BUILD_ID: "${CI_PIPELINE_ID}"
+  APM_NUMBER: "APMXXXXX"   # This can be dynamically set if needed
+  VERSION: "1.0"
+  SSC_TOKEN: "your-token-goes-here"
+  SSC_EMAIL: "your.email@fiserv.com"
+
+build_backend:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  script:
+    - cd backend
+    - dotnet restore
+    - dotnet build --configuration Release
+
+build_frontend:
+  stage: build
+  image: node:18
+  script:
+    - cd frontend
+    - npm install
+    - npm run build
+
+fortify_scan:
+  stage: fortify_scan
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - mkdir artifacts
+    - docker run -i --rm -v ${CI_PROJECT_DIR}:/app ${DOTNET_IMAGE} `
+        Start-FortifyScan.ps1 `
+          -BuildId "${BUILD_ID}" `
+          -Source /app `
+          -Application "${APM_NUMBER}" `
+          -Version "${VERSION}" `
+          -Token "${SSC_TOKEN}" `
+          -Email "${SSC_EMAIL}" `
+          -OutputFolder /app/artifacts `
+          -Publish
