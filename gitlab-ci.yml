@@ -1,0 +1,7 @@
+stages:
+  - build
+  - scan
+
+include:
+  - local: 'ci/image-ci.yml'
+  - local: 'ci/fortify-scan.yml'
