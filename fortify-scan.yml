@@ -1,0 +1,20 @@
+fortify_scan:
+  stage: scan
+  image: $APIHUB_FORTIFY
+  script:
+    - mkdir -p artifacts
+    - docker run -i --rm -v ${PWD}:/app \
+        $FMK_NEXUS/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z \
+        Start-FortifyScan.ps1 \
+          -BuildId "$CI_PIPELINE_ID" \
+          -Source /app \
+          -Application "$FORTIFY_APP_ID" \
+          -Version "$FORTIFY_VERSION" \
+          -Token "$SSC_TOKEN" \
+          -Email "$FORTIFY_NOTIFICATION_DL" \
+          -OutputFolder /app/artifacts \
+          -Publish
+  rules:
+    - if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "develop"'
+  tags:
+    - apimhub
