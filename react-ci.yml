@@ -1,0 +1,128 @@
+variables :
+  FMK_NEXUS: fmk.nexus.onefiserv.net
+
+default:
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - node_modules/
+
+  artifacts :
+    paths:
+      - dist
+
+# workflow:
+#   rules:
+#     - if: $CI_COMMIT_BRANCH
+
+stages:
+  - build
+  - test
+  - scan
+  - publish
+
+
+build-lowers:
+  stage: build
+  script:
+    -  echo "building CI_COMMIT_BRANCH..."
+    -  npm config set registry https://nexus.onefiserv.net/repository/npm-registry/
+    -  npm i --save --legacy-peer-deps
+    -  npm run build-$CI_COMMIT_BRANCH
+    -  find $PWD -type f -depth -name "package-lock.json" -exec rm {} \;
+    -  echo "clean up complete"
+  only:
+    - develop
+    - test
+  tags:
+    - apimhub-shell
+
+build-uppers:
+  stage: build
+  script:
+    -  echo "building CI_COMMIT_BRANCH..."
+    -  npm config set registry https://nexus.onefiserv.net/repository/npm-registry/
+    -  npm i --save --legacy-peer-deps
+    -  npm run build-$CI_COMMIT_BRANCH
+    -  find $PWD -type f -depth -name "package-lock.json" -exec rm {} \;
+    -  echo "clean up complete"
+  only:
+    - release
+  tags:
+    - apihub-shell-prod  
+
+publish-dev:
+  stage: publish
+  image: $FMK_AZURE
+  script:
+    - echo "az storage blob upload-batch -d apihubstoragecontainer-dev/release/cdn -s dist --connection-string $ALPHA_AZURE_STORAGE_CONNECTION_STRING"
+    # - az --version
+    - az storage blob upload-batch -d $DEV_BLOB_CONTAINER -s dist --connection-string $ALPHA_AZURE_STORAGE_CONNECTION_STRING --overwrite
+  environment:
+    name: develop
+  tags:
+    - apimhub
+  only:
+    - develop
+
+publish-test:
+  stage: publish
+  image: $FMK_AZURE  
+  # image: fmk-prod.nexus-ci.onefiserv.net/fmk/tools/csc-tool:FMK-12-01-22
+  script:
+    - echo "az storage blob upload-batch -d $BTAT_TEST_BLOB_CONTAINER -s dist --connection-string $BTAT_AZURE_STORAGE_CONNECTION_STRING"
+    - az storage blob upload-batch -d $BTAT_TEST_BLOB_CONTAINER -s dist --connection-string $BTAT_AZURE_STORAGE_CONNECTION_STRING --overwrite
+  environment:
+    name: test
+  tags:
+    - apimhub
+  only:
+    - test
+
+publish-cert:
+  stage: publish
+  image: $FMK_AZURE
+  # image: $FMK_AZURE
+  script:
+    - echo "az storage blob upload-batch -d $CERT_BLOB_CONTAINER -s dist --connection-string $CERT_AZURE_STORAGE_CONNECTION_STRING"
+    - az storage blob upload-batch -d $CERT_BLOB_CONTAINER -s dist --connection-string $CERT_AZURE_STORAGE_CONNECTION_STRING --overwrite
+  environment:
+    name: cert
+  tags:
+    - apihub-prod
+  only:
+    - release
+
+publish-prod:
+  stage: publish
+  # image: $FMK_AZURE
+  image: $FMK_AZURE
+  script:
+    - echo "az storage blob upload-batch -d $PROD_BLOB_CONTAINER -s dist --connection-string $PROD_AZURE_STORAGE_CONNECTION_STRING"
+    - az storage blob upload-batch -d $PROD_BLOB_CONTAINER -s dist --connection-string $PROD_AZURE_STORAGE_CONNECTION_STRING --overwrite
+  environment:
+    name: prod
+  tags:
+    - apihub-prod
+  only:
+    - release
+
+scan-distribution:
+  stage: scan
+  image: $APIHUB_FORTIFY
+  script:
+    - scancentral -sscurl $SSC_URL -ssctoken $SSC_TOKEN start -upload -application APM0006528 -version $FORTIFY_VERSION -uptoken $SSC_TOKEN -email $FORTIFY_NOTIFICATION_DL -bt none -targs "-exclude **/dist/$BUNDLE.js"
+  tags:
+    - apimhub
+  rules:
+    - if: '( $FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "develop")'
+
+unit-testing: 
+  stage: test
+  script: 
+    - npm i --save --legacy-peer-deps
+    - npm run test
+  rules:
+    - if: '( $UNIT_TESTING == "true" && $CI_COMMIT_BRANCH == "develop")'
+  tags:
+    - apimhub-shell
