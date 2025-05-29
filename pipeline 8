@@ -1,0 +1,34 @@
+variables:
+  APIHUB_FORTIFY: fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11
+  APIHUB_DOTNET_IMAGE: fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z
+
+scan-distribution:
+  stage: scan
+  image: $APIHUB_FORTIFY
+  tags:
+    - apimhub
+  rules:
+    - if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "develop"'
+  script:
+    # Step 1: Create artifacts directory
+    - mkdir -p artifacts
+
+    # Step 2: Run Fortify Scan inside dotnet image (simulate nested container by docker-in-docker)
+    - docker run -i --rm -v "$PWD":/app $APIHUB_DOTNET_IMAGE powershell Start-FortifyScan.ps1 `
+        -BuildId "$CI_PIPELINE_ID" `
+        -Source /app `
+        -Application "$FORTIFY_APPLICATION" `
+        -Version "$FORTIFY_VERSION" `
+        -Token "$SSC_TOKEN" `
+        -Email "$FORTIFY_NOTIFICATION_DL" `
+        -OutputFolder /app/artifacts `
+        -Publish
+
+    # Step 3: Upload results using Fortify ScanCentral
+    - scancentral -sscurl $SSC_URL -ssctoken $SSC_TOKEN start -upload \
+        -application "$FORTIFY_APPLICATION" \
+        -version "$FORTIFY_VERSION" \
+        -uptoken "$SSC_TOKEN" \
+        -email "$FORTIFY_NOTIFICATION_DL" \
+        -bt none \
+        -targs "-exclude **/dist/\$BUNDLE.js"
