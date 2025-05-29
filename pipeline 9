@@ -1,0 +1,42 @@
+stages:
+  - scan
+
+variables:
+  APIHUB_DOTNET_IMAGE: "fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z"
+  FORTIFY_APPLICATION: "APMXXXXX"
+  FORTIFY_NOTIFICATION_DL: "your.email@fiserv.com"
+  SSC_TOKEN: "your-token-goes-here"
+  SSC_URL: "https://fortify.fiserv.one/ssc"
+  FORTIFY_VERSION: "$CI_COMMIT_REF_NAME"
+
+scan-fortify-dotnet:
+  stage: scan
+  image: $APIHUB_DOTNET_IMAGE
+  tags:
+    - apimhub
+  before_script:
+    - mkdir -p artifacts
+  script:
+    # Run the Fortify scan
+    - powershell -Command "Start-FortifyScan.ps1 `
+        -BuildId $CI_PIPELINE_ID `
+        -Source /app `
+        -Application $FORTIFY_APPLICATION `
+        -Version $FORTIFY_VERSION `
+        -Token '$SSC_TOKEN' `
+        -Email '$FORTIFY_NOTIFICATION_DL' `
+        -OutputFolder /app/artifacts `
+        -Publish"
+
+    # Upload results using Fortify ScanCentral CLI
+    - scancentral -sscurl $SSC_URL -ssctoken $SSC_TOKEN start -upload `
+        -application $FORTIFY_APPLICATION `
+        -version $FORTIFY_VERSION `
+        -uptoken $SSC_TOKEN `
+        -email $FORTIFY_NOTIFICATION_DL `
+        -bt none `
+        -targs "-exclude **/dist/\$BUNDLE.js"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "release"'
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*$/'
