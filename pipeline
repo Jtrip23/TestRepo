@@ -1,0 +1,31 @@
+variables:
+  FMK_NEXUS: fmk.nexus.onefiserv.net
+
+stages:
+  - scan
+
+fortify-scan:
+  stage: scan
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - mkdir -p artifacts
+  script:
+    - docker run -i --rm -v "$PWD":/app \
+        $FMK_NEXUS/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z \
+        Start-FortifyScan.ps1 \
+          -BuildId "$CI_COMMIT_SHORT_SHA" \
+          -Source /app \
+          -Application "$FORTIFY_APP_ID" \
+          -Version "$FORTIFY_VERSION" \
+          -Token "$SSC_TOKEN" \
+          -Email "$FORTIFY_NOTIFICATION_DL" \
+          -OutputFolder /app/artifacts \
+          -Publish
+  tags:
+    - apimhub
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\/.+$/'
