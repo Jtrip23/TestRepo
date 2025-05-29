@@ -1,0 +1,33 @@
+variables:
+  FMK_NEXUS: fmk.nexus.onefiserv.net
+  FORTIFY_IMAGE: fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z
+
+stages:
+  - scan
+
+fortify-scan:
+  stage: scan
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "Starting Fortify scan using Docker image: $FORTIFY_IMAGE"
+    - docker run -i --rm \
+        -v "$CI_PROJECT_DIR:/app" \
+        "$FORTIFY_IMAGE" \
+        pwsh -File Start-FortifyScan.ps1 `
+          -BuildId "$FORTIFY_BUILD_ID" `
+          -Source /app `
+          -Application "$FORTIFY_APPLICATION" `
+          -Version "$FORTIFY_VERSION" `
+          -Token "$FORTIFY_TOKEN" `
+          -Email "$FORTIFY_EMAIL" `
+          -OutputFolder /app/artifacts `
+          -Publish
+  artifacts:
+    paths:
+      - artifacts
+  rules:
+    - if: '$FORTIFY_SCAN == "true"'
+  tags:
+    - apimhub
