@@ -2,34 +2,29 @@ Running with gitlab-runner 16.11.2 (1d04b67a)
   on l7lt2apmglr0005-Global-GitLab-Cloud-Docker-apihub-shared 9_2bTK_P, system ID: s_842e1c8182d6
 Resolving secrets
 Preparing the "docker" executor
-00:05
-Using Docker executor with image fmk.nexus.onefiserv.net/fmk/ext-tools/fmk-dind:FMK-07-01-24 ...
-Pulling docker image fmk.nexus.onefiserv.net/fmk/ext-tools/fmk-dind:FMK-07-01-24 ...
-Using docker image sha256:4b91739ef5bb8a2e72adddd1184182a8fe879b55b1c8aec5ac74c54e32f4822d for fmk.nexus.onefiserv.net/fmk/ext-tools/fmk-dind:FMK-07-01-24 with digest fmk.nexus.onefiserv.net/fmk/ext-tools/fmk-dind@sha256:52594cb78b4858d825d4adb9e409afb381b87dd73ea467d9ba54ef558a204508 ...
+00:08
+Using Docker executor with image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
+Pulling docker image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
+Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
 Preparing environment
 00:01
 Running on runner-92btkp-project-26732-concurrent-0 via l7lt2apmglr0005...
 Getting source from Git repository
-00:03
+00:02
 Fetching changes with git depth set to 20...
 Reinitialized existing Git repository in /builds/na/corp/technology-services/apigee-ofs/fiserv_apigee_management_portal/.git/
-Checking out 6900b40c as detached HEAD (ref is feature)...
-Removing artifacts/
+Checking out de59441b as detached HEAD (ref is feature)...
 Skipping Git submodules setup
 Executing "step_script" stage of the job script
-00:01
-Using docker image sha256:4b91739ef5bb8a2e72adddd1184182a8fe879b55b1c8aec5ac74c54e32f4822d for fmk.nexus.onefiserv.net/fmk/ext-tools/fmk-dind:FMK-07-01-24 with digest fmk.nexus.onefiserv.net/fmk/ext-tools/fmk-dind@sha256:52594cb78b4858d825d4adb9e409afb381b87dd73ea467d9ba54ef558a204508 ...
-$ echo "Starting ScanCentral scan for .NET backend"
-Starting ScanCentral scan for .NET backend
+00:02
+Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
 $ mkdir -p artifacts
-$ docker run -i --rm -v ${CI_PROJECT_DIR}:/app \ $FORTIFY_IMAGE \ scancentral -sscurl "$SSC_URL" \ -ssctoken "$SSC_TOKEN" \ start -upload \ -application "$FORTIFY_APPLICATION" \ -version "$FORTIFY_VERSION" \ -uptoken "$SSC_TOKEN" \ -email "$FORTIFY_NOTIFICATION_DL" \ -bt none \ -b "$BUILD_ID" \ -project-root /app \ -verbose
-docker: invalid reference format.
-See 'docker run --help'.
-Uploading artifacts for failed job
-00:05
-Uploading artifacts...
-artifacts: found 1 matching artifact files and directories 
-Uploading artifacts as "archive" to coordinator... 201 Created  id=14797320 responseStatus=201 Created token=glcbt-64
+$ docker run -i --rm -v "$PWD":/app $APIHUB_DOTNET_IMAGE powershell Start-FortifyScan.ps1 ` -BuildId "$CI_PIPELINE_ID" ` -Source /app ` -Application "APM0004849" ` -Version "1.1" ` -Token "https://first-data-non-prod.login.apigee.com/oauth/token" ` -Email "APIHub@fiserv.com" ` -OutputFolder /app/artifacts ` -Publish
+/usr/bin/bash: line 175: -BuildId: command not found
+/usr/bin/bash: line 175: -Application: command not found
+/usr/bin/bash: line 175: -Token: command not found
+/usr/bin/bash: line 175: -OutputFolder: command not found
+/usr/bin/bash: line 175: docker: command not found
 Cleaning up project directory and file based variables
 00:01
 ERROR: Job failed: exit code 1
