@@ -1,0 +1,27 @@
+variables:
+  FMK_NEXUS: fmk.nexus.onefiserv.net
+
+stages:
+  - scan
+
+fortify-scan:
+  stage: scan
+  image: fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z
+  script:
+    - echo "Running Fortify scan..."
+    - pwsh Start-FortifyScan.ps1 `
+        -BuildId "$FORTIFY_BUILD_ID" `
+        -Source /app `
+        -Application "$FORTIFY_APPLICATION" `
+        -Version "$FORTIFY_VERSION" `
+        -Token "$FORTIFY_TOKEN" `
+        -Email "$FORTIFY_EMAIL" `
+        -OutputFolder /app/artifacts `
+        -Publish
+  artifacts:
+    paths:
+      - artifacts
+  rules:
+    - if: '$FORTIFY_SCAN == "true"'
+  tags:
+    - apimhub
