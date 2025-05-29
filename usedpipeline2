@@ -1,0 +1,33 @@
+variables:
+  FMK_DOTNET_IMAGE: fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z
+  FORTIFY_IMAGE: fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11
+
+stages:
+  - scan
+
+fortify-scan:
+  stage: scan
+  image: $FORTIFY_IMAGE
+  services:
+    - docker:dind
+  script:
+    - echo "Running Fortify scan inside Docker container..."
+    - docker run -i --rm \
+        -v "$CI_PROJECT_DIR:/app" \
+        "$FORTIFY_IMAGE" \
+        pwsh -File Start-FortifyScan.ps1 `
+          -BuildId "$FORTIFY_BUILD_ID" `
+          -Source /app `
+          -Application "APM0004849" `
+          -Version "1.1" `
+          -Token "https://first-data-non-prod.login.apigee.com/oauth/token" `
+          -Email "jay.tripathi@fiserv.com" `
+          -OutputFolder /app/artifacts `
+          -Publish
+  artifacts:
+    paths:
+      - artifacts
+  #rules:
+   # - if: '$FORTIFY_SCAN == "true"'
+  tags:
+    - apimhub
