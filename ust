@@ -1,0 +1,27 @@
+Create GitLab pipeline for .NET image to perform fortify scan.
+
+This pipeline will primarly scan the .NET code base for the project details provided below.
+
+--------------------------------
+
+Background Info:
+
+Talked with the SCA team and as best I can tell there is a way to setup the build and scan using a GitLab Pipeline.
+
+Here is the repository for the Self-Service Portal:
+
+https://gitlab.onefiserv.net/na/corp/technology-services/apigee-ofs/fiserv_apigee_management_portal
+
+ 
+
+Here is the details given by the SCA team.
+
+https://fiservcorp.sharepoint.com/sites/AppSec/SitePages/Fortify-SCA-Usage-Details.aspx
+
+ 
+
+Image for building .Net code:
+
+https://gitlab.onefiserv.net/fmk/fmk-build/build-internal/fmk-build-containers/lineage-dotnet/tier-4/dotnet-8.0-build#fortify-scanning
+
+https://fiservservicepoint.fiservapps.com/nav_to.do?uri=%2Fcatalog_find.do%3Fsysparm_parent%3D%26sysparm_catalog%3D%26sysparm_catalog_view%3Dcatalog_default%26sysparm_processing_hint%3D%26sysparm_tsgroups%3D%26sysparm_view%3Dtext_search%26sysparm_parent_sys_id%3D%26sysparm_parent_table%3D%26sysparm_view%3Dcatalog_default%26sysparm_collection%3D%26sysparm_collectionID%3D%26sysparm_collection_key%3D%26sysparm_search%3DAppSec
