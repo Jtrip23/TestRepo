@@ -1,33 +1,37 @@
 variables:
-  FMK_DOTNET_IMAGE: fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z
-  FORTIFY_IMAGE: fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11
+  APIHUB_FORTIFY: fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11
+  APIHUB_DOTNET_IMAGE: fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z
 
 stages:
   - scan
 
-fortify-scan:
+scan-distribution:
   stage: scan
-  image: $FORTIFY_IMAGE
-  services:
-    - docker:dind
-  script:
-    - echo "Running Fortify scan inside Docker container..."
-    - docker run -i --rm \
-        -v "$CI_PROJECT_DIR:/app" \
-        "$FORTIFY_IMAGE" \
-        pwsh -File Start-FortifyScan.ps1 `
-          -BuildId "$FORTIFY_BUILD_ID" `
-          -Source /app `
-          -Application "APM0004849" `
-          -Version "1.1" `
-          -Token "https://first-data-non-prod.login.apigee.com/oauth/token" `
-          -Email "jay.tripathi@fiserv.com" `
-          -OutputFolder /app/artifacts `
-          -Publish
-  artifacts:
-    paths:
-      - artifacts
-  #rules:
-   # - if: '$FORTIFY_SCAN == "true"'
+  image: $APIHUB_FORTIFY
   tags:
     - apimhub
+  #rules:
+   # - if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "develop"'
+  script:
+    # Step 1: Create artifacts directory
+    - mkdir -p artifacts
+
+    # Step 2: Run Fortify Scan inside dotnet image (simulate nested container by docker-in-docker)
+    - docker run -i --rm -v "$PWD":/app $APIHUB_DOTNET_IMAGE powershell Start-FortifyScan.ps1 `
+        -BuildId "$CI_PIPELINE_ID" `
+        -Source /app `
+        -Application "APM0004849" `
+        -Version "1.1" `
+        -Token "https://first-data-non-prod.login.apigee.com/oauth/token" `
+        -Email "APIHub@fiserv.com" `
+        -OutputFolder /app/artifacts `
+        -Publish
+
+    # Step 3: Upload results using Fortify ScanCentral
+    - scancentral -sscurl https://fortify.fiserv.one/ssc -ssctoken https://first-data-non-prod.login.apigee.com/oauth/token start -upload \
+        -application "APM0004849" \
+        -version "1.1" \
+        -uptoken "https://first-data-non-prod.login.apigee.com/oauth/token" \
+        -email "APIHub@fiserv.com" \
+        -bt none \
+        -targs "-exclude **/dist/\$BUNDLE.js"
