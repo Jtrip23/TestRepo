@@ -1,0 +1,48 @@
+stages:
+  - scan
+
+variables:
+  FMK_NEXUS: "fmk.nexus.onefiserv.net"
+  IMAGE_NAME: "$FMK_NEXUS/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11"
+  DOTNET_IMAGE: "$FMK_NEXUS/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z"
+  SOURCE_DIR: "/app"
+  OUTPUT_DIR: "/app/artifacts"
+  BUILD_ID: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+  SSC_URL: "https://fortify.fiserv.one/ssc"
+  SSC_TOKEN: "b190d1f5-d4b3-4708-8d36-19b7d8e6badc"
+  FORTIFY_APP: "APM0004849"
+  FORTIFY_VERSION: "1.1"
+  FORTIFY_EMAIL: "APIHub@fiserv.com"
+
+scan-distribution:
+  stage: scan
+  image: "$IMAGE_NAME"  # Fortify image used here for scan
+  tags:
+    - apimhub
+  before_script:
+    - echo "Logging into Nexus..."
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$FMK_NEXUS"
+  script:
+    - echo "Creating artifacts directory..."
+    - mkdir -p artifacts
+
+    - echo "Running .NET build and Fortify scan with dotnet build image..."
+    - docker run -i --rm -v ${PWD}:${SOURCE_DIR} "$DOTNET_IMAGE" powershell -Command "
+        ./Start-FortifyScan.ps1 `
+          -BuildId '${BUILD_ID}' `
+          -Source '${SOURCE_DIR}' `
+          -Application '${FORTIFY_APP}' `
+          -Version '${FORTIFY_VERSION}' `
+          -Token '${SSC_TOKEN}' `
+          -Email '${FORTIFY_EMAIL}' `
+          -OutputFolder '${OUTPUT_DIR}' `
+          -Publish
+      "
+
+    - echo "Uploading scan results to Fortify SSC..."
+    - scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload \
+        -application "$FORTIFY_APP" \
+        -version "$FORTIFY_VERSION" \
+        -uptoken "$SSC_TOKEN" \
+        -email "$FORTIFY_EMAIL" \
+        -bt none
