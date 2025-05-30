@@ -1,0 +1,45 @@
+stages:
+  - scan
+
+variables:
+  FMK_NEXUS: "fmk.nexus.onefiserv.net"
+  IMAGE_NAME: "$FMK_NEXUS/apihub-deploy-executor:${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+  SOURCE_DIR: "/app"
+  OUTPUT_DIR: "/app/artifacts"
+  BUILD_ID: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+
+scan-distribution:
+  stage: scan
+  image: "$FMK_NEXUS/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z"
+  tags:
+    - apimhub
+  before_script:
+    - echo "Logging into Nexus..."
+    - docker login -u "$NEXUS_REPO_USER" -p "$NEXUS_REPO_PASS" "$FMK_NEXUS"
+  script:
+    - echo "Creating artifacts directory..."
+    - mkdir -p artifacts
+
+    # Run Fortify scan using .NET image with PowerShell script
+    - docker run -i --rm -v ${PWD}:${SOURCE_DIR} "$CI_JOB_IMAGE" powershell -Command "
+        ./Start-FortifyScan.ps1 `
+          -BuildId '${BUILD_ID}' `
+          -Source '${SOURCE_DIR}' `
+          -Application 'APM0006528' `
+          -Version '${FORTIFY_VERSION}' `
+          -Token '${SSC_TOKEN}' `
+          -Email '${FORTIFY_NOTIFICATION_DL}' `
+          -OutputFolder '${OUTPUT_DIR}' `
+          -Publish
+      "
+
+    # Optional: Additional SSC upload via scancentral
+    - scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload `
+        -application "APM0006528" `
+        -version "$FORTIFY_VERSION" `
+        -uptoken "$SSC_TOKEN" `
+        -email "$FORTIFY_NOTIFICATION_DL" `
+        -bt none `
+        -targs "-exclude **/dist/$BUNDLE.js"
+  rules:
+    - if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "develop"'
