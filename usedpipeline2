@@ -1,37 +1,42 @@
-variables:
-  APIHUB_FORTIFY: fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11
-  APIHUB_DOTNET_IMAGE: fmk.nexus.onefiserv.net/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z
-
 stages:
   - scan
 
+variables:
+  FMK_NEXUS: "fmk.nexus.onefiserv.net"
+  IMAGE_NAME: "$FMK_NEXUS/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11"
+  SOURCE_DIR: "/app"
+  OUTPUT_DIR: "/app/artifacts"
+  BUILD_ID: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+
 scan-distribution:
   stage: scan
-  image: $APIHUB_FORTIFY
+  image: "$FMK_NEXUS/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z"
   tags:
     - apimhub
-  #rules:
-   # - if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "develop"'
+  before_script:
+    - echo "Logging into Nexus..."
+    - docker login -u "svc-apim-cicd-dev" -p "F_arX1Z%fIQSfZEM@aJL9RRk*" "$FMK_NEXUS"
   script:
-    # Step 1: Create artifacts directory
+    - echo "Creating artifacts directory..."
     - mkdir -p artifacts
+    - docker run -i --rm -v ${PWD}:${SOURCE_DIR} "$CI_JOB_IMAGE" powershell -Command "
+        ./Start-FortifyScan.ps1 `
+          -BuildId '${BUILD_ID}' `
+          -Source '${SOURCE_DIR}' `
+          -Application 'APM0004849' `
+          -Version '1.1' `
+          -Token 'b190d1f5-d4b3-4708-8d36-19b7d8e6badc' `
+          -Email 'APIHub@fiserv.com' `
+          -OutputFolder '${OUTPUT_DIR}' `
+          -Publish
+      "
 
-    # Step 2: Run Fortify Scan inside dotnet image (simulate nested container by docker-in-docker)
-    - docker run -i --rm -v "$PWD":/app $APIHUB_DOTNET_IMAGE powershell Start-FortifyScan.ps1 `
-        -BuildId "$CI_PIPELINE_ID" `
-        -Source /app `
-        -Application "APM0004849" `
-        -Version "1.1" `
-        -Token "https://first-data-non-prod.login.apigee.com/oauth/token" `
-        -Email "APIHub@fiserv.com" `
-        -OutputFolder /app/artifacts `
-        -Publish
-
-    # Step 3: Upload results using Fortify ScanCentral
-    - scancentral -sscurl https://fortify.fiserv.one/ssc -ssctoken https://first-data-non-prod.login.apigee.com/oauth/token start -upload \
-        -application "APM0004849" \
-        -version "1.1" \
-        -uptoken "https://first-data-non-prod.login.apigee.com/oauth/token" \
-        -email "APIHub@fiserv.com" \
-        -bt none \
-        -targs "-exclude **/dist/\$BUNDLE.js"
+    - scancentral -sscurl "https://fortify.fiserv.one/ssc" -ssctoken "b190d1f5-d4b3-4708-8d36-19b7d8e6badc" start -upload `
+        -application "APM0004849" `
+        -version "1.1" `
+        -uptoken "b190d1f5-d4b3-4708-8d36-19b7d8e6badc" `
+        -email "APIHub@fiserv.com" `
+        -bt none `
+        -targs "-exclude **/dist/$BUNDLE.js"
+  #rules:
+   # - if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "feature"'
