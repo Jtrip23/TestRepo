@@ -1,27 +1,32 @@
 Running with gitlab-runner 16.11.2 (1d04b67a)
-  on l7lt2apmglr0005-Global-GitLab-Cloud-Docker-apihub-shared 9_2bTK_P, system ID: s_842e1c8182d6
+  on l7lt2apmglr0004-Global-GitLab-Cloud-Docker-apihub-shared FeEX_mAX, system ID: s_842e1c8182d6
 Resolving secrets
 Preparing the "docker" executor
-00:04
+01:07
 Using Docker executor with image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
 Pulling docker image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
 Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
 Preparing environment
-00:01
-Running on runner-92btkp-project-26732-concurrent-0 via l7lt2apmglr0005...
+00:06
+Running on runner-feexmax-project-26732-concurrent-0 via l7lt2apmglr0004...
 Getting source from Git repository
 00:02
 Fetching changes with git depth set to 20...
 Reinitialized existing Git repository in /builds/na/corp/technology-services/apigee-ofs/fiserv_apigee_management_portal/.git/
-Checking out e7544905 as detached HEAD (ref is feature)...
+Checking out e61e4829 as detached HEAD (ref is feature)...
 Skipping Git submodules setup
 Executing "step_script" stage of the job script
-00:01
+00:10
 Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
-$ echo "Logging into Nexus..."
-Logging into Nexus...
-$ docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$FMK_NEXUS"
-/usr/bin/bash: line 184: docker: command not found
+$ echo "Preparing Fortify scan package..."
+Preparing Fortify scan package...
+$ mkdir -p artifacts
+$ scancentral package -b "$BUILD_ID" -source "$SOURCE_DIR" -o "$PACKAGE_NAME" --exclude "**/dist/*.js"
+launcher.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
+scancentral.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
+Shutting down with errors. Please see log for details.
+Unrecognized argument found: '-b'. This is not a valid argument for the 'package' command.
+Type 'scancentral -help' for usage.
 Cleaning up project directory and file based variables
 00:01
 ERROR: Job failed: exit code 1
