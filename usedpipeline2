@@ -31,3 +31,6 @@ fortify-scan:
         -bt none \
         -uploadzip "$PACKAGE_NAME" \
         -email "$FORTIFY_EMAIL"
+
+  #rules:
+    #- if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "develop"'
