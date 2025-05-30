@@ -4,39 +4,30 @@ stages:
 variables:
   FMK_NEXUS: "fmk.nexus.onefiserv.net"
   IMAGE_NAME: "$FMK_NEXUS/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11"
-  SOURCE_DIR: "/app"
-  OUTPUT_DIR: "/app/artifacts"
   BUILD_ID: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+  SOURCE_DIR: "/app"
+  PACKAGE_NAME: "scan-package.zip"
+  SSC_URL: "https://fortify.fiserv.one/ssc"
+  SSC_TOKEN: "b190d1f5-d4b3-4708-8d36-19b7d8e6badc"
+  FORTIFY_VERSION: "1.1"
+  FORTIFY_APPLICATION: "APM0004849"
+  FORTIFY_EMAIL: "APIHub@fiserv.com"
 
-scan-distribution:
+fortify-scan:
   stage: scan
-  image: "$FMK_NEXUS/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z"
+  image: "$IMAGE_NAME"
   tags:
     - apimhub
-  before_script:
-    - echo "Logging into Nexus..."
-    - docker login -u "svc-apim-cicd-dev" -p "F_arX1Z%fIQSfZEM@aJL9RRk*" "$FMK_NEXUS"
   script:
-    - echo "Creating artifacts directory..."
+    - echo "Preparing Fortify scan package..."
     - mkdir -p artifacts
-    - docker run -i --rm -v ${PWD}:${SOURCE_DIR} "$CI_JOB_IMAGE" powershell -Command "
-        ./Start-FortifyScan.ps1 `
-          -BuildId '${BUILD_ID}' `
-          -Source '${SOURCE_DIR}' `
-          -Application 'APM0004849' `
-          -Version '1.1' `
-          -Token 'b190d1f5-d4b3-4708-8d36-19b7d8e6badc' `
-          -Email 'APIHub@fiserv.com' `
-          -OutputFolder '${OUTPUT_DIR}' `
-          -Publish
-      "
+    - scancentral package -b "$BUILD_ID" -source "$SOURCE_DIR" -o "$PACKAGE_NAME" --exclude "**/dist/*.js"
 
-    - scancentral -sscurl "https://fortify.fiserv.one/ssc" -ssctoken "b190d1f5-d4b3-4708-8d36-19b7d8e6badc" start -upload `
-        -application "APM0004849" `
-        -version "1.1" `
-        -uptoken "b190d1f5-d4b3-4708-8d36-19b7d8e6badc" `
-        -email "APIHub@fiserv.com" `
-        -bt none `
-        -targs "-exclude **/dist/$BUNDLE.js"
-  #rules:
-   # - if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "feature"'
+    - echo "Running Fortify scan via ScanCentral..."
+    - scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload \
+        -application "$FORTIFY_APPLICATION" \
+        -version "$FORTIFY_VERSION" \
+        -uptoken "$SSC_TOKEN" \
+        -bt none \
+        -uploadzip "$PACKAGE_NAME" \
+        -email "$FORTIFY_EMAIL"
