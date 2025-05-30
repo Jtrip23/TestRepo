@@ -1,0 +1,41 @@
+variables:
+  FMK_NEXUS: fmk.nexus.onefiserv.net
+  DOTNET_IMAGE: "$FMK_NEXUS/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z"
+  IMAGE_NAME: "$FMK_NEXUS/apihub-deploy-executor:$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA"
+
+stages:
+  - build-image
+  - scan
+
+build-dotnet-image:
+  stage: build-image
+  tags:
+    - apimhub-shell
+  script:
+    - echo "Logging into Nexus..."
+    - docker login -u "$NEXUS_REPO_USER" -p "$NEXUS_REPO_PASS" $FMK_NEXUS
+    - echo "Building image..."
+    - docker build . -t "$IMAGE_NAME"
+    - echo "Pushing image..."
+    - docker push "$IMAGE_NAME"
+
+fortify-scan:
+  stage: scan
+  tags:
+    - apimhub
+  image: $DOTNET_IMAGE
+  script:
+    - echo "Creating artifacts directory..."
+    - mkdir -p artifacts
+    - echo "Running Fortify Scan..."
+    - docker run -i --rm -v "$PWD":/app $DOTNET_IMAGE powershell Start-FortifyScan.ps1 `
+        -BuildId "$CI_PIPELINE_ID" `
+        -Source /app `
+        -Application "APM0006528" `
+        -Version "$FORTIFY_VERSION" `
+        -Token "$SSC_TOKEN" `
+        -Email "$FORTIFY_NOTIFICATION_DL" `
+        -OutputFolder /app/artifacts `
+        -Publish
+  rules:
+    - if: '$FORTIFY_SCAN == "true"'
