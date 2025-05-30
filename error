@@ -2,7 +2,7 @@ Running with gitlab-runner 16.11.2 (1d04b67a)
   on l7lt2apmglr0005-Global-GitLab-Cloud-Docker-apihub-shared 9_2bTK_P, system ID: s_842e1c8182d6
 Resolving secrets
 Preparing the "docker" executor
-00:08
+00:04
 Using Docker executor with image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
 Pulling docker image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
 Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
@@ -13,18 +13,15 @@ Getting source from Git repository
 00:02
 Fetching changes with git depth set to 20...
 Reinitialized existing Git repository in /builds/na/corp/technology-services/apigee-ofs/fiserv_apigee_management_portal/.git/
-Checking out de59441b as detached HEAD (ref is feature)...
+Checking out e7544905 as detached HEAD (ref is feature)...
 Skipping Git submodules setup
 Executing "step_script" stage of the job script
-00:02
+00:01
 Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
-$ mkdir -p artifacts
-$ docker run -i --rm -v "$PWD":/app $APIHUB_DOTNET_IMAGE powershell Start-FortifyScan.ps1 ` -BuildId "$CI_PIPELINE_ID" ` -Source /app ` -Application "APM0004849" ` -Version "1.1" ` -Token "https://first-data-non-prod.login.apigee.com/oauth/token" ` -Email "APIHub@fiserv.com" ` -OutputFolder /app/artifacts ` -Publish
-/usr/bin/bash: line 175: -BuildId: command not found
-/usr/bin/bash: line 175: -Application: command not found
-/usr/bin/bash: line 175: -Token: command not found
-/usr/bin/bash: line 175: -OutputFolder: command not found
-/usr/bin/bash: line 175: docker: command not found
+$ echo "Logging into Nexus..."
+Logging into Nexus...
+$ docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$FMK_NEXUS"
+/usr/bin/bash: line 184: docker: command not found
 Cleaning up project directory and file based variables
 00:01
 ERROR: Job failed: exit code 1
