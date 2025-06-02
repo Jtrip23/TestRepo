@@ -29,7 +29,5 @@ fortify-scan:
       -version "$FORTIFY_VERSION"
       -uptoken "$SSC_TOKEN"
       -bt none
-      -uploadzip "$PACKAGE_NAME"
+      -source "$PACKAGE_NAME"
       -email "$FORTIFY_EMAIL"
-  #rules: 
-   # - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/'
