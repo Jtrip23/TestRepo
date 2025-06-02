@@ -5,7 +5,6 @@ variables:
   FMK_NEXUS: "fmk.nexus.onefiserv.net"
   IMAGE_NAME: "$FMK_NEXUS/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11"
   BUILD_ID: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
-  SOURCE_DIR: "$(pwd)"
   PACKAGE_NAME: "scan-package.zip"
   SSC_URL: "https://fortify.fiserv.one/ssc"
   SSC_TOKEN: "b190d1f5-d4b3-4708-8d36-19b7d8e6badc"
@@ -22,12 +21,12 @@ fortify-scan:
     - echo "Preparing Fortify scan package..."
     - mkdir -p artifacts
     - scancentral package -o "$PACKAGE_NAME" -bt none -exclude "**/dist/*.js"
-    - echo "Uploading package to Fortify SSC..."
+    - echo "Running Fortify scan and uploading package to SSC..."
     - >
-      scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload
+      scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -scan
       -application "$FORTIFY_APPLICATION"
       -version "$FORTIFY_VERSION"
       -uptoken "$SSC_TOKEN"
-      -btsource "$PACKAGE_NAME"
+      -uploadzip "$PACKAGE_NAME"
       -bt none
       -email "$FORTIFY_EMAIL"
