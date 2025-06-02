@@ -22,12 +22,12 @@ fortify-scan:
     - echo "Preparing Fortify scan package..."
     - mkdir -p artifacts
     - scancentral package -o "$PACKAGE_NAME" -bt none -exclude "**/dist/*.js"
-    - echo "Running Fortify scan via ScanCentral..."
+    - echo "Uploading package to Fortify SSC..."
     - >
       scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload
       -application "$FORTIFY_APPLICATION"
       -version "$FORTIFY_VERSION"
       -uptoken "$SSC_TOKEN"
+      -btsource "$PACKAGE_NAME"
       -bt none
-      -source "$PACKAGE_NAME"
       -email "$FORTIFY_EMAIL"
