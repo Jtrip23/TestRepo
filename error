@@ -13,12 +13,12 @@ Getting source from Git repository
 00:03
 Fetching changes with git depth set to 20...
 Reinitialized existing Git repository in /builds/na/corp/technology-services/apigee-ofs/fiserv_apigee_management_portal/.git/
-Checking out 1ae444e0 as detached HEAD (ref is feature)...
+Checking out 84bcc56f as detached HEAD (ref is feature)...
 Removing artifacts/
 Removing scan-package.zip
 Skipping Git submodules setup
 Executing "step_script" stage of the job script
-00:14
+00:12
 Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
 $ echo "Preparing Fortify scan package..."
 Preparing Fortify scan package...
@@ -32,15 +32,15 @@ Executing 'npm ci' at '/builds/na/corp/technology-services/apigee-ofs/fiserv_api
 Packaging project...
 $ echo "Running Fortify scan via ScanCentral..."
 Running Fortify scan via ScanCentral...
-$ scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload -application "$FORTIFY_APPLICATION" -version "$FORTIFY_VERSION" -uptoken "$SSC_TOKEN" -bt none -uploadzip "$PACKAGE_NAME" -email "$FORTIFY_EMAIL"
+$ scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload -application "$FORTIFY_APPLICATION" -version "$FORTIFY_VERSION" -uptoken "$SSC_TOKEN" -bt none -source "$PACKAGE_NAME" -email "$FORTIFY_EMAIL"
 launcher.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
 Getting controller URL from SSC...
 Checking for updates...
 No update available or auto update is disabled on the controller.
 scancentral.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
-Unrecognized argument found: '-uploadzip'. If this is an SCA argument, it should be used after the '-scan' option.
-Type 'scancentral -help' to show the command-line help.
 Shutting down with errors. Please see log for details.
+Unrecognized argument found: '-source'. If this is an SCA argument, it should be used after the '-scan' option.
+Type 'scancentral -help' to show the command-line help.
 Cleaning up project directory and file based variables
 00:01
 ERROR: Job failed: exit code 1
