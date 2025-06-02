@@ -1,24 +1,24 @@
 Running with gitlab-runner 16.11.2 (1d04b67a)
-  on l7lt2apmglr0004-Global-GitLab-Cloud-Docker-apihub-shared FeEX_mAX, system ID: s_842e1c8182d6
+  on l7lt2apmglr0005-Global-GitLab-Cloud-Docker-apihub-shared 9_2bTK_P, system ID: s_842e1c8182d6
 Resolving secrets
 Preparing the "docker" executor
-00:05
+00:08
 Using Docker executor with image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
 Pulling docker image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
 Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
 Preparing environment
-00:00
-Running on runner-feexmax-project-26732-concurrent-0 via l7lt2apmglr0004...
+00:01
+Running on runner-92btkp-project-26732-concurrent-0 via l7lt2apmglr0005...
 Getting source from Git repository
-00:03
+00:04
 Fetching changes with git depth set to 20...
 Reinitialized existing Git repository in /builds/na/corp/technology-services/apigee-ofs/fiserv_apigee_management_portal/.git/
-Checking out 3daef45c as detached HEAD (ref is feature)...
+Checking out 029671c8 as detached HEAD (ref is feature)...
 Removing artifacts/
 Removing scan-package.zip
 Skipping Git submodules setup
 Executing "step_script" stage of the job script
-00:13
+00:14
 Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
 $ echo "Preparing Fortify scan package..."
 Preparing Fortify scan package...
@@ -30,17 +30,17 @@ Gathering project information...
 Run packaging without build tool integration.
 Executing 'npm ci' at '/builds/na/corp/technology-services/apigee-ofs/fiserv_apigee_management_portal/Web' to restore dependencies...
 Packaging project...
-$ echo "Uploading package to Fortify SSC..."
-Uploading package to Fortify SSC...
-$ scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload -application "$FORTIFY_APPLICATION" -version "$FORTIFY_VERSION" -uptoken "$SSC_TOKEN" -btsource "$PACKAGE_NAME" -bt none -email "$FORTIFY_EMAIL"
+$ echo "Running Fortify scan and uploading package to SSC..."
+Running Fortify scan and uploading package to SSC...
+$ scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -scan -application "$FORTIFY_APPLICATION" -version "$FORTIFY_VERSION" -uptoken "$SSC_TOKEN" -uploadzip "$PACKAGE_NAME" -bt none -email "$FORTIFY_EMAIL"
 launcher.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
-Getting controller URL from SSC...
-Checking for updates...
-No update available or auto update is disabled on the controller.
 scancentral.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
-Unrecognized argument found: 'scan-package.zip'. If this is an SCA argument, it should be used after the '-scan' option.
-Type 'scancentral -help' to show the command-line help.
+ScanCentral runs in remote translation mode with auto build tool detection.
+To run MBS scan specify -b (--build-id) or -mbs with -scan option,
+-p (--package) for remote translation of specific package,
+-bt (--build-tool) and/or -bf (--build-file) to configure remote translation build integration.
 Shutting down with errors. Please see log for details.
+Cannot use -scan without -b (--build-id) or -mbs
 Cleaning up project directory and file based variables
-00:00
+00:01
 ERROR: Job failed: exit code 1
