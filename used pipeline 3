@@ -5,8 +5,8 @@ variables:
   FMK_NEXUS: "fmk.nexus.onefiserv.net"
   IMAGE_NAME: "$FMK_NEXUS/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11"
   BUILD_ID: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
-  SOURCE_DIR: "/app"
-  PACKAGE_NAME: "scan-package-${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}.zip"
+  SOURCE_DIR: "$(pwd)"
+  PACKAGE_NAME: "scan-package.zip"
   SSC_URL: "https://fortify.fiserv.one/ssc"
   SSC_TOKEN: "b190d1f5-d4b3-4708-8d36-19b7d8e6badc"
   FORTIFY_VERSION: "1.1"
@@ -19,16 +19,13 @@ fortify-scan:
   tags:
     - apimhub
   script:
-    - echo "Creating artifacts folder..."
+    - echo "Preparing Fortify scan package..."
     - mkdir -p artifacts
+    - scancentral -help
+    #- scancentral package -b "$BUILD_ID" -source "$SOURCE_DIR" -o "$PACKAGE_NAME" --exclude "**/dist/*.js"
+    - scancentral package -o "$PACKAGE_NAME" -bt none -exclude "**/dist/*.js"
 
-    - echo "Packaging code with ScanCentral..."
-    - scancentral package \
-        -source "$SOURCE_DIR" \
-        -o "$PACKAGE_NAME" \
-        --exclude "**/dist/*.js"
-
-    - echo "Uploading and scanning package with Fortify ScanCentral..."
+    - echo "Running Fortify scan via ScanCentral..."
     - scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload \
         -application "$FORTIFY_APPLICATION" \
         -version "$FORTIFY_VERSION" \
@@ -37,5 +34,5 @@ fortify-scan:
         -uploadzip "$PACKAGE_NAME" \
         -email "$FORTIFY_EMAIL"
 
-  rules:
-    - if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "develop"'
+  #rules:
+    #- if: '$FORTIFY_SCAN == "true" && $CI_COMMIT_BRANCH == "develop"'
