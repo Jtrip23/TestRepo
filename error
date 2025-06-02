@@ -1,32 +1,73 @@
 Running with gitlab-runner 16.11.2 (1d04b67a)
-  on l7lt2apmglr0004-Global-GitLab-Cloud-Docker-apihub-shared FeEX_mAX, system ID: s_842e1c8182d6
+  on l7lt2apmglr0005-Global-GitLab-Cloud-Docker-apihub-shared 9_2bTK_P, system ID: s_842e1c8182d6
 Resolving secrets
 Preparing the "docker" executor
-01:07
+00:10
 Using Docker executor with image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
 Pulling docker image fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 ...
 Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
 Preparing environment
-00:06
-Running on runner-feexmax-project-26732-concurrent-0 via l7lt2apmglr0004...
-Getting source from Git repository
 00:02
+Running on runner-92btkp-project-26732-concurrent-0 via l7lt2apmglr0005...
+Getting source from Git repository
+00:06
 Fetching changes with git depth set to 20...
 Reinitialized existing Git repository in /builds/na/corp/technology-services/apigee-ofs/fiserv_apigee_management_portal/.git/
-Checking out e61e4829 as detached HEAD (ref is feature)...
+Checking out 7b04feee as detached HEAD (ref is feature)...
+Removing artifacts/
+Removing scan-package.zip
 Skipping Git submodules setup
 Executing "step_script" stage of the job script
-00:10
+00:36
 Using docker image sha256:377e3180ed870cae9fcf43b1ff5f4335435dd29556181a7ec6b3d7ed8c19233f for fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11 with digest fmk.nexus.onefiserv.net/vendor/docker/fortifydocker/fortify-ci-tools@sha256:5df9a13699b7a5afa5905436197fdbb8e7d021fadb12a7210364bfd64a62dd0e ...
 $ echo "Preparing Fortify scan package..."
 Preparing Fortify scan package...
 $ mkdir -p artifacts
-$ scancentral package -b "$BUILD_ID" -source "$SOURCE_DIR" -o "$PACKAGE_NAME" --exclude "**/dist/*.js"
+$ scancentral -help
 launcher.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
 scancentral.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
+usage: scancentral [global options] command [command options]
+Global options:
+----------------------------------------
+  -debug                Enable debug output in the log
+  -h,--help <command>   Get help for the selected <command>.
+                        Type 'all' to see all command help
+  -ssctoken <token>     Specify the encoded SSC authentication token.
+                        Acceptance of the decoded token is deprecated.
+  -sscurl <url>         Specify the SSC URL
+  -url <url>            Specify the controller URL
+  -v,--version          Get the product version
+  -version              * Deprecated: Use -v (--version) to get the
+                        product version *
+Commands:
+status       Get the status of a remote scan job
+start        Start a remote scan job
+retrieve     Download the result of a remote scan job
+cancel       Cancel a remote scan job
+worker       Start or test a ScanCentral Sensor
+package      Create a zip package of the specified project
+arguments    * Deprecated: Use the start or package command with either the -targs or -sargs option. * Generate a settings file for additional SCA command-line arguments
+progress     Get the progress of the SCA scan
+update       Update ScanCentral clients/sensors if a newer version is available on the Controller.
+upload       Request FPR upload
+$ scancentral package -o "$PACKAGE_NAME" -bt none -exclude "**/dist/*.js"
+launcher.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
+scancentral.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
+Gathering project information...
+Run packaging without build tool integration.
+Executing 'npm ci' at '/builds/na/corp/technology-services/apigee-ofs/fiserv_apigee_management_portal/Web' to restore dependencies...
+Packaging project...
+$ echo "Running Fortify scan via ScanCentral..."
+Running Fortify scan via ScanCentral...
+$ scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload \ -application "$FORTIFY_APPLICATION" \ -version "$FORTIFY_VERSION" \ -uptoken "$SSC_TOKEN" \ -bt none \ -uploadzip "$PACKAGE_NAME" \ -email "$FORTIFY_EMAIL"
+launcher.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
+Getting controller URL from SSC...
+Checking for updates...
+No update available or auto update is disabled on the controller.
+scancentral.log will be stored in "/root/.fortify/scancentral-24.4.1/log" directory.
+Unrecognized argument found: ' -application'. If this is an SCA argument, it should be used after the '-scan' option.
+Type 'scancentral -help' to show the command-line help.
 Shutting down with errors. Please see log for details.
-Unrecognized argument found: '-b'. This is not a valid argument for the 'package' command.
-Type 'scancentral -help' for usage.
 Cleaning up project directory and file based variables
 00:01
 ERROR: Job failed: exit code 1
