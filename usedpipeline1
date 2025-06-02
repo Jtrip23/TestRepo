@@ -28,5 +28,6 @@ fortify-scan:
       -version "$FORTIFY_VERSION"
       -uptoken "$SSC_TOKEN"
       -uploadzip "$PACKAGE_NAME"
+      -b "$BUILD_ID"
       -bt none
       -email "$FORTIFY_EMAIL"
