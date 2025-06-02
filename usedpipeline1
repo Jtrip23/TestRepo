@@ -1,38 +1,35 @@
-variables:
-  FMK_NEXUS: fmk.nexus.onefiserv.net
-  FORTIFY_IMAGE: "${FMK_NEXUS}/fmk/dotnet/dotnet-8.0-build:FMK-20250401T173337Z"
-  FORTIFY_APPLICATION: "APM0004849"
-  FORTIFY_VERSION: "1.1"
-  SSC_URL: "https://ssc.example.com"  # Replace with actual SSC URL
-  SSC_TOKEN: "your-token-goes-here"
-  FORTIFY_NOTIFICATION_DL: "jay.tripathi@fiserv.com"
-  BUILD_ID: "12345678"
-
 stages:
   - scan
 
-fortify-scancentral-scan:
+variables:
+  FMK_NEXUS: "fmk.nexus.onefiserv.net"
+  IMAGE_NAME: "$FMK_NEXUS/vendor/docker/fortifydocker/fortify-ci-tools:6.2.0-jdk-11"
+  BUILD_ID: "${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+  SOURCE_DIR: "$(pwd)"
+  PACKAGE_NAME: "scan-package.zip"
+  SSC_URL: "https://fortify.fiserv.one/ssc"
+  SSC_TOKEN: "b190d1f5-d4b3-4708-8d36-19b7d8e6badc"
+  FORTIFY_VERSION: "1.1"
+  FORTIFY_APPLICATION: "APM0004849"
+  FORTIFY_EMAIL: "APIHub@fiserv.com"
+
+fortify-scan:
   stage: scan
+  image: "$IMAGE_NAME"
   tags:
     - apimhub
- 
   script:
-    - echo "Starting ScanCentral scan for .NET backend"
+    - echo "Preparing Fortify scan package..."
     - mkdir -p artifacts
-    - docker run -i --rm -v ${CI_PROJECT_DIR}:/app \
-        $FORTIFY_IMAGE \
-        scancentral -sscurl "$SSC_URL" \
-                    -ssctoken "$SSC_TOKEN" \
-                    start -upload \
-                    -application "$FORTIFY_APPLICATION" \
-                    -version "$FORTIFY_VERSION" \
-                    -uptoken "$SSC_TOKEN" \
-                    -email "$FORTIFY_NOTIFICATION_DL" \
-                    -bt none \
-                    -b "$BUILD_ID" \
-                    -project-root /app \
-                    -verbose
-  artifacts:
-    when: always
-    paths:
-      - artifacts  
+    - scancentral package -o "$PACKAGE_NAME" -bt none -exclude "**/dist/*.js"
+    - echo "Running Fortify scan via ScanCentral..."
+    - >
+      scancentral -sscurl "$SSC_URL" -ssctoken "$SSC_TOKEN" start -upload
+      -application "$FORTIFY_APPLICATION"
+      -version "$FORTIFY_VERSION"
+      -uptoken "$SSC_TOKEN"
+      -bt none
+      -uploadzip "$PACKAGE_NAME"
+      -email "$FORTIFY_EMAIL"
+  #rules: 
+   # - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/'
